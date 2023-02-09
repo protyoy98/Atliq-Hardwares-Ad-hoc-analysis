@@ -196,7 +196,7 @@ average_discount_percentage */
 select
 	i.customer_code,
     c.customer,
-    i.pre_invoice_discount_pct as average_discount_percentage
+    round(avg(i.pre_invoice_discount_pct),2) as average_discount_percentage
 from
 	gdb023.dim_customer c
 inner join
@@ -204,8 +204,10 @@ inner join
 on
 	i.customer_code = c.customer_code
 where
-	i.fiscal_year = 2021
-    and c.market = 'India'
+	c.market = 'India'
+    and i.fiscal_year = 2021
+group by
+	1,2
 order by
 	3 desc
 limit
@@ -223,7 +225,7 @@ Gross sales Amount */
 select
 	month(sales.date) as Month,
     year(sales.date) as Year,
-    sum(sales.sold_quantity * price.gross_price) as "Gross sales Amount"
+    round(sum(sales.sold_quantity * price.gross_price),2) as "Gross sales Amount"
 from
 	gdb023.fact_sales_monthly sales 
 inner join
