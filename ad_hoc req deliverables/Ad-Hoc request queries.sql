@@ -250,14 +250,19 @@ The final  output contains these fields sorted by the total_sold_quantity,
 Quarter  
 total_sold_quantity */
 select
-	quarter(date) as Quarter,
+	case
+		when month(date) in (9,10,11) then 'Q1'
+        when month(date) in (12,1,2) then 'Q2'
+        when month(date) in (3,4,5) then 'Q3'
+        when month(date) in (6,7,8) then 'Q4'
+	end as Quarter,
     sum(sold_quantity) as total_sold_quantity
 from
 	gdb023.fact_sales_monthly
 where
-	year(date) = 2020
+	fiscal_year = 2020
 group by
-	quarter(date)
+	1
 order by
 	sum(sold_quantity) desc;
 
@@ -274,13 +279,13 @@ with sales_by_channel as
 	customer.channel as channel,
     sum(sales.sold_quantity * price.gross_price)  as gross_sales
 from
-	dim_customer customer
+	gdb023.dim_customer customer
 inner join
-	fact_sales_monthly sales
+	gdb023.fact_sales_monthly sales
 on
 	sales.customer_code = customer.customer_code
 inner join
-	fact_gross_price price
+	gdb023.fact_gross_price price
 on
 	sales.product_code = price.product_code
 where
@@ -307,9 +312,7 @@ product_code
 product  
 total_sold_quantity 
 rank_ord */
-select
-*
-from
+with product_ranking as
 (select
 	product.division,
     product.product_code,
@@ -330,7 +333,11 @@ on
 where
 	sales.fiscal_year = 2021
 group by
-	1,2,3) sub
+	1,2,3)
+select
+	*
+from
+	product_ranking
 where
 	rank_ord <=3;
 
